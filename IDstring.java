@@ -1,3 +1,4 @@
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Scanner;
@@ -16,8 +17,25 @@ public class IDstring {
         System.out.print("Введите ваше отчество: ");
         String MiddleName = scanner.nextLine();
 
-        System.out.print("Введите вашу дату рождения в формате ГГГГ-ММ-ДД: ");
-        String BirthDateStr = scanner.nextLine();
+        // Повторяем ввод даты, пока не будет введена корректная дата
+        LocalDate BirthDate = null;
+        boolean validDate = false;
+        while (!validDate) {
+            try {
+                System.out.print("Введите вашу дату рождения в формате ГГГГ-ММ-ДД: ");
+                String BirthDateStr = scanner.nextLine();
+                BirthDate = LocalDate.parse(BirthDateStr);
+
+                // Проверка на 29 февраля в невисокосном году
+                if (BirthDate.getMonthValue() == 2 && BirthDate.getDayOfMonth() == 29 && !BirthDate.isLeapYear()) {
+                    throw new DateTimeException("29 февраля может быть только в високосный год!");
+                }
+
+                validDate = true; // Если дата прошла проверки, устанавливаем флаг в true
+            } catch (DateTimeException e) {
+                System.out.println("Ошибка: " + e.getMessage());
+            }
+        }
 
         // разделение ФИО пользователя на инициалы
         char FirstNameInitial = FirstName.charAt(0);
@@ -27,7 +45,6 @@ public class IDstring {
         char gender = (MiddleName.endsWith("а")) ? 'Ж' : 'M';
 
         // вычисление возраста в полных годах
-        LocalDate BirthDate = LocalDate.parse(BirthDateStr);
         LocalDate CurrentDate = LocalDate.now();
         int age = Period.between(BirthDate, CurrentDate).getYears();
 
