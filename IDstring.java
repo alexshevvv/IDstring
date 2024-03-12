@@ -2,9 +2,11 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class IDstring {
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
         // запрос необходимой информации о пользователе
@@ -14,7 +16,7 @@ public class IDstring {
         System.out.print("Введите ваше имя: ");
         String FirstName = scanner.nextLine();
 
-        System.out.print("Введите ваше отчество: ");
+        System.out.print("Введите ваше отчество (если есть): ");
         String MiddleName = scanner.nextLine();
 
         // Повторяем ввод даты, пока не будет введена корректная дата
@@ -24,11 +26,20 @@ public class IDstring {
             try {
                 System.out.print("Введите вашу дату рождения в формате ГГГГ-ММ-ДД: ");
                 String BirthDateStr = scanner.nextLine();
+
+                // Проверка формата даты
+                Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
+                Matcher matcher = pattern.matcher(BirthDateStr);
+                if (!matcher.matches()) {
+                    throw new DateTimeException("Дата должна быть в формате ГГГГ-ММ-ДД");
+                }
+
+                // Парсинг даты
                 BirthDate = LocalDate.parse(BirthDateStr);
 
-                // Проверка на 29 февраля в невисокосном году
-                if (BirthDate.getMonthValue() == 2 && BirthDate.getDayOfMonth() == 29 && !BirthDate.isLeapYear()) {
-                    throw new DateTimeException("29 февраля может быть только в високосный год!");
+                // Проверка, что год рождения не больше текущего года
+                if (BirthDate.isAfter(LocalDate.now())) {
+                    throw new DateTimeException("Дата рождения не может быть в будущем");
                 }
 
                 validDate = true; // Если дата прошла проверки, устанавливаем флаг в true
@@ -39,7 +50,7 @@ public class IDstring {
 
         // разделение ФИО пользователя на инициалы
         char FirstNameInitial = FirstName.charAt(0);
-        char MiddleNameInitial = MiddleName.charAt(0);
+        char MiddleNameInitial = (MiddleName.isEmpty()) ? '-' : MiddleName.charAt(0);
 
         // определение пола (предполагаем, что мужской, если отчество не оканчивается на "а")
         char gender = (MiddleName.endsWith("а")) ? 'Ж' : 'M';
